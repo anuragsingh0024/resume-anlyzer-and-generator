@@ -3,22 +3,25 @@ import User from '../models/User.model.js'
 
 export const strictedAuth = async (req, res, next) => {
     try {
-        const token =
+        let token =
             req.cookies?.token ||
-            req.headers.authorization?.split(" ")[1] || // Bearer token from Authorization header
-            req.body.token;
+            req.headers.authorization?.replace(/^Bearer\s+/i, "") ||
+            req.body?.token;
 
-
-        // If JWT is missing, return 401 Unauthorized response
-        if (!token) {
-            return res.status(403).json({ success: false, message: `Token Missing` });
+        // Clean quotes if token was JSON stringified
+        if (typeof token === 'string' && (token.startsWith('"') || token.startsWith("'"))) {
+            token = token.slice(1, -1);
         }
 
-        //verify the token
+        // If JWT is missing, return 401 response
+        if (!token) {
+            return res.status(401).json({ success: false, message: `Token Missing` });
+        }
+
+        // verify the token
         const decode = jwt.verify(token, process.env.JWT_SECRET);
 
-
-        //storing the decode data into req
+        // storing the decoded data into req
         req.user = decode;
 
         next();

@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setUser } from './redux/authSlice';
+import axiosInstance from './services/axiosInstance';
 
 import Home from './pages/Home';
 import Navbar from './components/layout/Nav';
@@ -16,11 +19,25 @@ import AdminRoute from './components/auth/AdminRoute';
 import AdminPanel from './pages/Admin';
 import ResumeGenerator from './components/ResumeGenerator';
 
-// Placeholder Pages (Inhe baad mein expand kar sakte ho)
-const Login = () => <div className="pt-32 text-center text-white">Login Page (Coming Soon)</div>;
-
-
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      axiosInstance.get("/user/get-user")
+        .then((res) => {
+          if (res.data?.success && res.data.user) {
+            dispatch(setUser(res.data.user));
+            localStorage.setItem("role", res.data.user.role || "user");
+          }
+        })
+        .catch((err) => {
+          console.log("Session restore failed:", err.message);
+        });
+    }
+  }, [dispatch]);
+
   return (
     <Router>
       <div className="min-h-screen bg-background text-text-primary selection:bg-primary/30">

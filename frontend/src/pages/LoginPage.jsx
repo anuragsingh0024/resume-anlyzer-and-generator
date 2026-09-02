@@ -79,39 +79,33 @@ const LoginPage = () => {
     }
     const loadingToast = toast.loading("Verifying otp...")
     try {
-
       setIsSubmitingSignUp2(true)
       const response = await axiosInstance.post('/auth/verify-otp', { email, otp });
-      if (response.status === 200) {
+      if (response.status === 200 && response.data.token) {
+        toast.dismiss(loadingToast);
         toast.success("Login successful");
-        toast.dismiss(loadingToast)
-        dispatch(loginSuccess(response.data.user))
-        setIsSubmitingSignUp2(false)
-        localStorage.setItem("token", JSON.stringify(response.data.token));
-        localStorage.setItem("role", response.data.user.role)
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("role", response.data.user?.role || "user");
+        dispatch(loginSuccess({ user: response.data.user, token: response.data.token }));
+        setIsSubmitingSignUp2(false);
+
         const tempId = localStorage.getItem("tempId");
         if (tempId && tempId !== "null" && tempId !== "undefined") {
-          console.log("tempId: ", tempId)
           await convertGuestToUser();
         }
-        navigate('/dashboard')
-        // setTimeout(() => {
-        //   window.location.reload();
-        // }, 800);
-
+        navigate('/dashboard');
       } else {
-        toast.dismiss(loadingToast)
-        toast.error(response.data.message);
-        setIsSubmitingSignUp2(false)
+        toast.dismiss(loadingToast);
+        toast.error(response.data.message || "Failed to verify OTP");
+        setIsSubmitingSignUp2(false);
       }
     } catch (error) {
       const message =
         error.response?.data?.message || "Failed to verify OTP";
-      toast.dismiss(loadingToast)
-      toast.error(message)
+      toast.dismiss(loadingToast);
+      toast.error(message);
       console.error('Error:', error);
-
-      setIsSubmitingSignUp2(false)
+      setIsSubmitingSignUp2(false);
     }
   };
 
@@ -120,7 +114,6 @@ const LoginPage = () => {
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        // ⚠️ ye access_token hota hai
         const res = await axios.get(
           "https://www.googleapis.com/oauth2/v3/userinfo",
           {
@@ -138,13 +131,17 @@ const LoginPage = () => {
           { user }
         );
 
-        // JWT save
-        localStorage.setItem("token", backendRes.data.token);
-
-        console.log("Login success", backendRes.data);
-
+        if (backendRes.data.token) {
+          localStorage.setItem("token", backendRes.data.token);
+          localStorage.setItem("role", backendRes.data.user?.role || "user");
+          dispatch(loginSuccess({ user: backendRes.data.user, token: backendRes.data.token }));
+          toast.success("Login successful");
+          await convertGuestToUser();
+          navigate("/dashboard");
+        }
       } catch (err) {
         console.log(err);
+        toast.error("Google login failed");
       }
     },
     onError: () => console.log("Login Failed"),
@@ -164,15 +161,15 @@ const LoginPage = () => {
         idToken,
       });
 
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("role", res.data.user.role)
-      dispatch(loginSuccess(res.data.user));
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("role", res.data.user?.role || "user");
+        dispatch(loginSuccess({ user: res.data.user, token: res.data.token }));
 
-      toast.success("Login successful");
-      await convertGuestToUser();
-      navigate("/dashboard");
-      // window.location.reload()
-
+        toast.success("Login successful");
+        await convertGuestToUser();
+        navigate("/dashboard");
+      }
     } catch (err) {
       console.log(err);
       toast.error("Google login failed");

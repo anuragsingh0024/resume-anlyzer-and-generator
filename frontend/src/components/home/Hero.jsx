@@ -27,7 +27,6 @@ const Hero = () => {
 
     const handleFileChange = async (e) => {
         const selectedFile = e.target.files[0];
-        const file = selectedFile;
         if (selectedFile) {
             try {
                 setFile(selectedFile);
@@ -44,27 +43,25 @@ const Hero = () => {
                         },
                     }
                 );
-                console.log('1st clg response: ', response);
-                console.log('2nd clg response. data: ', response.data);
-                setResumeResultData('3rd clg response. data. data: ', response.data.data);
-                localStorage.setItem("tempId", response.data.data.tempId);
-                setIsScanning(false);
-                if (isLoggedIn) {
-                    navigate('/dashboard')
-                } else {
-                    navigate('/dummy-dashboard')
-                }
 
+                if (response.data?.success && response.data.data) {
+                    setResumeResultData(response.data.data);
+                    if (response.data.data.tempId) {
+                        localStorage.setItem("tempId", response.data.data.tempId);
+                    }
+                    setIsScanning(false);
+                    if (isLoggedIn) {
+                        navigate('/dashboard');
+                    } else {
+                        navigate('/dummy-dashboard');
+                    }
+                }
             } catch (error) {
                 console.error("Resume Upload Error:", error.message);
-            }
-            finally {
+                setIsScanning(false);
+            } finally {
                 setIsScanning(false);
             }
-
-
-
-
         }
     };
 

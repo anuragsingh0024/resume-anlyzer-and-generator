@@ -9,13 +9,24 @@ const axiosInstance = axios.create({
     withCredentials: true, // Important if using cookies
 });
 
-// Request interceptor (optional - for adding headers)
+// Request interceptor for auth headers & offline check
 axiosInstance.interceptors.request.use(
     (config) => {
         if (!navigator.onLine) {
             toast.error("No Internet Connection! Please check your network.");
             return Promise.reject(new Error("No Internet Connection"));
         }
+
+        // Attach JWT token if available
+        let token = localStorage.getItem("token");
+        if (token) {
+            // Clean up any json-stringified quotes
+            if (token.startsWith('"') && token.endsWith('"')) {
+                token = token.slice(1, -1);
+            }
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+
         return config;
     },
     (error) => {

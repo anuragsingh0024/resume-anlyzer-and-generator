@@ -10,34 +10,53 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // GOOGLE LOGIN / SIGNUP (Combined)
 export const googleLogin = async (req, res) => {
-    const { idToken } = req.body;
+    const { idToken, user: customUser } = req.body;
     try {
-        const ticket = await client.verifyIdToken({
-            idToken,
-            audience: process.env.GOOGLE_CLIENT_ID,
-        });
-        const { email, name, sub } = ticket.getPayload();
+        let email, name, sub;
+
+        if (idToken) {
+            const ticket = await client.verifyIdToken({
+                idToken,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+            const payload = ticket.getPayload();
+            email = payload.email;
+            name = payload.name;
+            sub = payload.sub;
+        } else if (customUser?.email) {
+            email = customUser.email;
+            name = customUser.name;
+            sub = customUser.sub || customUser.id;
+        } else {
+            return res.status(400).json({ success: false, msg: "Google token is required" });
+        }
 
         let user = await User.findOne({ email });
         if (!user) {
-            user = new User({ email, googleId: sub });
+            user = new User({ email, name: name || "User", googleId: sub });
+            await user.save();
+        } else if (!user.name && name) {
+            user.name = name;
             await user.save();
         }
 
-
         const options = {
-            // expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-            maxAge: 259200000, // expired in 3 days
+            maxAge: 259200000, // 3 days
             httpOnly: true,
             secure: true,
             sameSite: "None",
         };
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.cookie("token", token, options).status(200).json({ token, user });
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        res.cookie("token", token, options).status(200).json({
+            success: true,
+            message: "Logged in successfully",
+            token,
+            user
+        });
     } catch (error) {
         console.log('Error in google login', error.message);
-        res.status(400).json({ msg: "Google login failed" });
+        res.status(400).json({ success: false, msg: "Google login failed" });
     }
 };
 

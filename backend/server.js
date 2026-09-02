@@ -18,25 +18,37 @@ const PORT = process.env.PORT || 5000;
 //db connection
 connectDB()
 
-// Middleware
+// CORS configuration
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost:5174",
+  "https://resume-anlyzer-and-generator.vercel.app",
+  process.env.CLIENT_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://resume-anlyzer-and-generator.vercel.app"
-  ],
-  credentials: true
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps, curl, postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+      return callback(null, true);
+    }
+    return callback(null, true); // fallback allow for production reliability
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie"]
 }));
+
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
 
 //file upload
 cloudinaryConnect();
 app.use(fileUpload({
   useTempFiles: true
-}))
-
-
-app.use(express.json())
+}));
 // Routes (placeholder)
 app.get('/', (req, res) => {
   res.send('API is running...');

@@ -88,17 +88,18 @@ const ResumeLibrary = () => {
 
     const fetchResumes = async () => {
         try {
-            setIsLoading(true)
+            setIsLoading(true);
             const response = await axiosInstance.get("/resume/admin/all-resumes");
-            setResumes(response.data.resumes)
-
+            if (response.data?.resumes) {
+                setResumes(response.data.resumes);
+            }
         } catch (err) {
-            toast.error(response?.data?.message || "Failed to fetch resume")
-            console.log(err)
+            toast.error(err.response?.data?.message || "Failed to fetch resume");
+            console.log(err);
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
-    }
+    };
 
     //fetch while rendoring
     useEffect(() => {
@@ -215,7 +216,7 @@ const ResumeLibrary = () => {
                         </thead>
                         <tbody className="divide-y divide-border-muted/20">
                             {filteredResumes.length > 0 ? filteredResumes.map(r => (
-                                <tr key={r._id.$oid} className="hover:bg-primary/5 transition-colors cursor-pointer group" onClick={() => setSelectedResume(r)}>
+                                <tr key={r._id?.$oid || r._id} className="hover:bg-primary/5 transition-colors cursor-pointer group" onClick={() => setSelectedResume(r)}>
                                     <td className="p-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-primary font-bold">
