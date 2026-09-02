@@ -1,5 +1,11 @@
 {
-  "dependencies": {
-    "pdfkit": "^0.18.0"
+  "name": "resume-analyzer-and-generator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm --prefix backend install",
+    "postinstall": "npm --prefix backend install",
+    "start": "npm --prefix backend start"
   }
 }
