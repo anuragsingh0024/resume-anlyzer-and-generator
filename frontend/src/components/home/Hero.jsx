@@ -89,13 +89,25 @@ const Hero = () => {
                         and helps you land 10x more interviews.
                     </p>
                     {
-                        tempId != "null" && !isLoggedIn ? (
+                        tempId && tempId !== "null" && tempId !== "undefined" && !isLoggedIn ? (
                             <button
-                                className='bg-green-400 text-black cursor-pointer font-bold p-5 rounded-md hover:bg-green-300 transition-all duration-200'
+                                className='flex items-center gap-2 px-6 py-3 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold rounded-xl hover:bg-emerald-500/30 transition-all cursor-pointer shadow-lg'
                                 onClick={() => navigate('/dummy-dashboard')}
-                            >See Previous uploaded Resume </button>
+                            >
+                                <FileText size={18} /> See Uploaded Resume Preview →
+                            </button>
+                        ) : isLoggedIn ? (
+                            <button
+                                className='flex items-center gap-2 px-6 py-3 bg-primary text-background font-bold rounded-xl hover:scale-105 transition-all cursor-pointer shadow-lg shadow-primary/20'
+                                onClick={() => navigate('/dashboard')}
+                            >
+                                <FileText size={18} /> Go to Dashboard & Full Report →
+                            </button>
                         ) : (
-                            <p className='text-amber-400'>Upload your resume here</p>
+                            <div className="flex items-center gap-2 text-text-secondary text-sm">
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                Upload your resume below to get instant AI ATS scores
+                            </div>
                         )
                     }
                     {/* Upload Box */}
