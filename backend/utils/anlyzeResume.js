@@ -1,20 +1,32 @@
-import model from "../config/gemniConfugration.js";
+import model, { getModel } from "../config/gemniConfugration.js";
 import { geminiPrompt } from "./geminiPrompt.js";
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-const generateWithRetry = async (prompt, retries = 3) => {
-    try {
-        const result = await model.generateContent(prompt);
-        return result.response.text();
-    } catch (err) {
-        if (retries > 0 && err.message.includes("503")) {
-            console.log("⚠️ Gemini busy... retrying...");
-            await delay(2000);
-            return generateWithRetry(prompt, retries - 1);
+const candidateModels = [
+    process.env.GEMINI_MODEL || "gemini-2.5-flash",
+    "gemini-flash-latest",
+    "gemini-2.5-flash-lite",
+    "gemini-3.5-flash"
+];
+
+const generateWithRetry = async (prompt) => {
+    let lastError = null;
+
+    for (const modelName of candidateModels) {
+        try {
+            const currentModel = getModel(modelName);
+            const result = await currentModel.generateContent(prompt);
+            return result.response.text();
+        } catch (err) {
+            lastError = err;
+            console.log(`⚠️ Model ${modelName} failed (${err.message}). Trying next candidate...`);
+            if (err.message && err.message.includes("503")) {
+                await delay(1500);
+            }
         }
-        throw err;
     }
+    throw lastError;
 };
 
 export const analyzeResume = async (resumeText) => {

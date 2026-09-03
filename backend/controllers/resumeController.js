@@ -139,14 +139,14 @@ export const uploadResume = async (req, res) => {
 
         } catch (err) {
             console.error("Resume Analysis Error:", err.message);
-            return res.status(500).json({ success: false, message: "Resume analysis failed" });
+            return res.status(500).json({ success: false, message: err.message || "Resume analysis failed" });
         }
 
 
 
     } catch (error) {
         console.error("Resume Upload Error:", error.message);
-        return res.status(500).json({ success: false, message: "Resume upload failed" });
+        return res.status(500).json({ success: false, message: error.message || "Resume upload failed" });
     }
 
 
