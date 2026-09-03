@@ -159,7 +159,9 @@ export const getActiveResumeGuest = async (req, res) => {
         if (!tempId) {
             return res.status(400).json({ success: false, message: "No tempId provided" });
         }
-        const resume = await Resume.findOne({ tempId });
+        const resume = await Resume.findOne({
+            $or: [{ tempId: String(tempId) }, { tempId: Number(tempId) }]
+        });
         if (!resume) {
             return res.status(404).json({ success: false, message: "Resume not found" });
         }
@@ -173,38 +175,30 @@ export const getActiveResumeGuest = async (req, res) => {
 export const updateGuestToUser = async (req, res) => {
     try {
         const { tempId } = req.body;
-        const userId = req.user.id;
+        const userId = req.user?.id;
 
         if (!userId) {
-            console.log('err while user id not found in update guest to user: ', userId)
             return res.status(404).json({
                 success: false,
                 message: "User id not found"
-            })
+            });
         }
-        if (!tempId || tempId === "null" || tempId === "undefined" || tempId === null || tempId === undefined) {
-            console.log('error while upd gue to user : ', tempId)
+        if (!tempId || tempId === "null" || tempId === "undefined") {
             return res.status(400).json({ success: false, message: "No tempId provided" });
         }
-        const resume = await Resume.findOne({ tempId });
+        const resume = await Resume.findOne({
+            $or: [{ tempId: String(tempId) }, { tempId: Number(tempId) }]
+        });
         if (!resume) {
-            console.log('error while upd gue to user : ', resume)
             return res.status(404).json({ success: false, message: "Resume not found" });
         }
-        const updatedResume = await Resume.findOneAndUpdate(
-            { tempId },
+        const updatedResume = await Resume.findByIdAndUpdate(
+            resume._id,
             { userId, meta: { uploadType: "user" }, tempId: null },
             { new: true }
         );
 
-        if (!updatedResume) {
-            console.log('error while upd gue to user : ', updatedResume)
-            return res.status(404).json({
-                success: false,
-                message: "Resume not found"
-            });
-        }
-        await User.updateOne({ _id: userId }, { activeResume: updatedResume._id })
+        await User.findByIdAndUpdate(userId, { activeResume: updatedResume._id });
         return res.status(200).json({ success: true, data: updatedResume });
     } catch (error) {
         console.error("Resume Update Error:", error.message);
@@ -214,7 +208,7 @@ export const updateGuestToUser = async (req, res) => {
 
 export const getActiveResumeUser = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user?.id;
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({
@@ -222,19 +216,27 @@ export const getActiveResumeUser = async (req, res) => {
                 message: "User not found"
             });
         }
-        if (!user.activeResume) {
+
+        let resume = null;
+        if (user.activeResume) {
+            resume = await Resume.findById(user.activeResume);
+        }
+
+        // If no active resume set, auto-fallback to the latest resume uploaded by this user
+        if (!resume) {
+            resume = await Resume.findOne({ userId }).sort({ createdAt: -1 });
+            if (resume) {
+                await User.findByIdAndUpdate(userId, { activeResume: resume._id });
+            }
+        }
+
+        if (!resume) {
             return res.status(404).json({
                 success: false,
                 message: "No active resume found"
             });
         }
-        const resume = await Resume.findById(user.activeResume);
-        if (!resume) {
-            return res.status(404).json({
-                success: false,
-                message: "Resume not found"
-            });
-        }
+
         return res.status(200).json({ success: true, data: resume });
     } catch (error) {
         console.error("Resume Fetch Error:", error.message);

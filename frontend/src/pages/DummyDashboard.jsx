@@ -9,48 +9,48 @@ import Loader from '../components/templates/Loader';
 const DummyDashboard = () => {
     const navigate = useNavigate();
 
-    // Mock data for the "Fewer Details" view
     const [basicInfo, setBasicInfo] = useState({
-        name: "Dummy data",
-        atsScore: 68,
-        topSkills: ["React.js", "Node.js", "Tailwind CSS"],
-        status: "Action Required"
+        name: "Uploaded Resume",
+        role: "Profile Detected",
+        atsScore: 0,
+        topSkills: [],
+        status: "Analyzed"
     });
 
-    const [isLoading, setIsLoading] = useState(false)
-
+    const [isLoading, setIsLoading] = useState(false);
 
     const fetchBasicInfo = async () => {
-        const tempId = localStorage.getItem('tempId')
+        const tempId = localStorage.getItem('tempId');
 
         if (!tempId) {
-            navigate('/')
+            navigate('/');
+            return;
         }
 
         try {
-            setIsLoading(true)
-            const response = await axiosInstance.get(`/resume/get-active-resume-guest/${tempId}`)
-            console.log('1st clg response: ', response);
-            console.log('2nd clg response. data: ', response.data);
-            setBasicInfo({
-                name: response.data.data.analysis.personalInfo.name,
-                atsScore: response.data.data.analysis.ats.score,
-                topSkills: response.data.data.analysis.skills.detected,
-                status: response.data.data.analysis.ats.label
-            });
-            setIsLoading(false)
-            console.log('3rd clg basicInfo: ', basicInfo);
+            setIsLoading(true);
+            const response = await axiosInstance.get(`/resume/get-active-resume-guest/${tempId}`);
+            if (response.data?.success && response.data.data) {
+                const resData = response.data.data;
+                const analysis = resData.analysis || {};
+                setBasicInfo({
+                    name: analysis.personalInfo?.name || resData.title || "Uploaded Resume",
+                    role: analysis.profileMatch?.role || "Software Engineer",
+                    atsScore: analysis.ats?.score || 0,
+                    topSkills: analysis.skills?.detected || [],
+                    status: analysis.ats?.label || "Action Required"
+                });
+            }
         } catch (error) {
-            setIsLoading(false)
             console.error('Error fetching basic info:', error);
+        } finally {
+            setIsLoading(false);
         }
-
-    }
+    };
 
     useEffect(() => {
         fetchBasicInfo();
     }, []);
-
 
     if (isLoading) {
         return (
@@ -85,14 +85,18 @@ const DummyDashboard = () => {
                     <div className="glass-card p-6 md:col-span-2 flex flex-col justify-center">
                         <h1 className="text-3xl font-bold mb-2 tracking-tight">{basicInfo.name}</h1>
                         <p className="text-text-secondary mb-4 flex items-center gap-2">
-                            <Zap size={16} className="text-secondary" /> Senior Web Developer Profile Detected
+                            <Zap size={16} className="text-secondary" /> {basicInfo.role} Profile Detected
                         </p>
                         <div className="flex flex-wrap gap-2">
-                            {basicInfo.topSkills.map(skill => (
-                                <span key={skill} className="px-3 py-1 bg-surface border border-border-muted rounded-full text-xs font-medium text-text-primary">
-                                    {skill}
-                                </span>
-                            ))}
+                            {basicInfo.topSkills && basicInfo.topSkills.length > 0 ? (
+                                basicInfo.topSkills.map((skill, idx) => (
+                                    <span key={idx} className="px-3 py-1 bg-surface border border-border-muted rounded-full text-xs font-medium text-text-primary">
+                                        {skill}
+                                    </span>
+                                ))
+                            ) : (
+                                <span className="text-xs text-text-secondary">Skills Extracted</span>
+                            )}
                         </div>
                     </div>
                 </div>

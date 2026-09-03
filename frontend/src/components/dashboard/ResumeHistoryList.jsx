@@ -199,23 +199,22 @@ const ResumeHistoryList = () => {
                     </button>
 
 
-                    {resume._id == user.activeResume ? (
+                    {String(resume._id) === String(user?.activeResume?._id || user?.activeResume) ? (
                       <button
-                        className='flex items-center gap-2 px-5 py-2.5 bg-slate-100 hover:bg-green-600 text-slate-700 hover:text-white dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-green-600 dark:hover:text-white font-semibold rounded-xl transition-all duration-300 active:scale-95 group/btn shadow-sm w-32 text-center'
+                        className='flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-500/20 text-emerald-400 font-semibold rounded-xl w-32 text-center cursor-default'
                         disabled
                       >
                         Active
                       </button>
                     ) : (
                       <button
-                        className='flex items-center gap-2 px-5 py-2.5 bg-slate-100 hover:bg-violet-600 text-slate-700 hover:text-white dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-violet-600 dark:hover:text-white font-semibold rounded-xl transition-all duration-300 active:scale-95 group/btn shadow-sm'
+                        className='flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-xl transition-all duration-300 active:scale-95 cursor-pointer shadow-sm'
                         onClick={() => makeActiveResume(resume._id)}
                         disabled={isLoading}
                       >
-                        make active
+                        Make Active
                       </button>
-                    )
-                    }
+                    )}
                   </div>
                 </div>
               </motion.div>
