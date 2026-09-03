@@ -2,8 +2,14 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const getInitialToken = () => {
     let token = localStorage.getItem("token");
-    if (token && token.startsWith('"') && token.endsWith('"')) {
+    if (!token || token === "null" || token === "undefined" || token === '""') {
+        return null;
+    }
+    if (token.startsWith('"') && token.endsWith('"')) {
         token = token.slice(1, -1);
+    }
+    if (!token || token === "null" || token === "undefined") {
+        return null;
     }
     return token;
 };

@@ -8,8 +8,9 @@ import toast from 'react-hot-toast';
 const Hero = () => {
     const [isScanning, setIsScanning] = useState(false);
     const [file, setFile] = useState(null);
-    const isLoggedIn = localStorage.getItem("token");
-    const tempId = localStorage.getItem('tempId')
+    const { token } = useSelector((state) => state.auth);
+    const isLoggedIn = !!(token && token !== "null" && token !== "undefined");
+    const tempId = localStorage.getItem('tempId');
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
