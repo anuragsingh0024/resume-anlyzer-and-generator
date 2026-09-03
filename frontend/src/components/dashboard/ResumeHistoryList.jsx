@@ -113,17 +113,19 @@ const ResumeHistoryList = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-background text-text-primary">
+    <div className="flex min-h-screen bg-background text-text-primary pt-20">
       <Sidebar />
 
-      <main className="flex-1 p-8 mt-20">
-        <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2 flex items-center gap-3">
-            <FileText className="w-8 h-8 text-violet-600 dark:text-violet-500" />
-            Resume History
+      <main className="flex-1 p-4 sm:p-8 lg:p-10 overflow-x-hidden">
+        <div className="mb-8 space-y-2">
+          <h1 className="text-3xl font-black tracking-tight text-text-primary flex items-center gap-3">
+            <span className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+              <FileText className="w-5 h-5" />
+            </span>
+            Resume History & Scans
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium">
-            View and manage your previously uploaded resumes and their analyses.
+          <p className="text-text-secondary text-sm">
+            View, switch active target resumes, and inspect previous AI ATS scan reports.
           </p>
         </div>
 
@@ -133,82 +135,77 @@ const ResumeHistoryList = () => {
             {mockResumes.map((resume, index) => (
               <motion.div
                 key={resume._id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:shadow-xl hover:shadow-violet-500/5 dark:hover:shadow-violet-500/10 transition-all duration-300 relative overflow-hidden"
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="glass-card p-6 border border-white/5 hover:border-primary/40 transition-all duration-300 relative group overflow-hidden"
               >
-                {/* Decorative background gradient on hover */}
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-500/0 via-violet-500/0 to-violet-500/5 dark:to-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
 
                   {/* Left: Info */}
-                  <div className="space-y-3 flex-1">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 rounded-xl">
-                        <FileText className="w-5 h-5" />
+                  <div className="space-y-2 flex-1">
+                    <div className="flex items-center gap-3.5">
+                      <div className="p-3 bg-surface rounded-2xl border border-white/5 text-primary group-hover:scale-105 transition-transform">
+                        <FileText className="w-6 h-6" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate">
-                          {resume.title || resume.analysis.personalInfo?.name}
+                        <h3 className="text-lg font-bold text-text-primary group-hover:text-primary transition-colors truncate">
+                          {resume.title || resume.analysis?.personalInfo?.name || "Uploaded Resume"}
                         </h3>
-                        <p className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                        <p className="flex items-center gap-2 text-xs text-text-secondary mt-1 font-mono">
                           <Calendar className="w-3.5 h-3.5" />
-                          Uploaded on {formatDate(resume.createdAt)}
+                          {formatDate(resume.createdAt)}
                         </p>
                       </div>
                     </div>
                   </div>
 
                   {/* Middle: Stats */}
-                  <div className="flex items-center gap-6 sm:gap-10 border-t md:border-t-0 border-slate-100 dark:border-slate-800 pt-4 md:pt-0">
+                  <div className="flex flex-wrap items-center gap-4 sm:gap-8 border-t md:border-t-0 border-white/5 pt-4 md:pt-0">
                     <div>
-                      <p className="text-xs text-slate-400 font-semibold mb-1 uppercase tracking-wider flex items-center gap-1.5">
-                        <Briefcase className="w-3.5 h-3.5" /> Role Insight
+                      <p className="text-[10px] text-text-secondary font-mono uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <Briefcase className="w-3 h-3 text-secondary" /> Detected Role
                       </p>
-                      <p className="font-semibold text-slate-700 dark:text-slate-300">
-                        {resume.analysis.profileMatch?.role || "Unknown"}
+                      <p className="text-xs font-bold text-text-primary">
+                        {resume.analysis?.profileMatch?.role || "Software Developer"}
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-xs text-slate-400 font-semibold mb-1 uppercase tracking-wider flex items-center gap-1.5">
-                        <TrendingUp className="w-3.5 h-3.5" /> Match
+                      <p className="text-[10px] text-text-secondary font-mono uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <TrendingUp className="w-3 h-3 text-primary" /> Role Match
                       </p>
-                      <ScoreBadge score={resume.analysis.profileMatch?.score || 0} />
+                      <ScoreBadge score={resume.analysis?.profileMatch?.score || 0} />
                     </div>
 
                     <div>
-                      <p className="text-xs text-slate-400 font-semibold mb-1 uppercase tracking-wider flex items-center gap-1.5">
-                        <Award className="w-3.5 h-3.5" /> ATS
+                      <p className="text-[10px] text-text-secondary font-mono uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <Award className="w-3 h-3 text-accent" /> ATS Score
                       </p>
-                      <ScoreBadge score={resume.analysis.ats?.score || 0} />
+                      <ScoreBadge score={resume.analysis?.ats?.score || 0} />
                     </div>
                   </div>
 
                   {/* Right: Action */}
-                  <div className="flex justify-end md:ml-4 gap-10">
+                  <div className="flex items-center justify-end gap-3 pt-2 md:pt-0 border-t md:border-t-0 border-white/5">
                     <button
                       onClick={() => setSelectedResume(resume)}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-slate-100 hover:bg-violet-600 text-slate-700 hover:text-white dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-violet-600 dark:hover:text-white font-semibold rounded-xl transition-all duration-300 active:scale-95 group/btn shadow-sm"
+                      className="flex items-center gap-2 px-4 py-2.5 bg-surface hover:bg-white/10 text-text-primary text-xs font-bold rounded-xl border border-white/5 transition-all cursor-pointer"
                     >
-                      <Eye className="w-4 h-4" />
-                      View
-                      <ChevronRight className="w-4 h-4 opacity-0 -ml-4 group-hover/btn:opacity-100 group-hover/btn:ml-0 transition-all duration-300" />
+                      <Eye className="w-4 h-4 text-primary" />
+                      View Full Analysis
                     </button>
-
 
                     {String(resume._id) === String(user?.activeResume?._id || user?.activeResume) ? (
                       <button
-                        className='flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-500/20 text-emerald-400 font-semibold rounded-xl w-32 text-center cursor-default'
+                        className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-bold rounded-xl w-28 text-center cursor-default"
                         disabled
                       >
-                        Active
+                        ✓ Active
                       </button>
                     ) : (
                       <button
-                        className='flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-xl transition-all duration-300 active:scale-95 cursor-pointer shadow-sm'
+                        className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary text-background hover:scale-105 text-xs font-black rounded-xl transition-all cursor-pointer shadow-md shadow-primary/20 w-28"
                         onClick={() => makeActiveResume(resume._id)}
                         disabled={isLoading}
                       >
@@ -222,10 +219,12 @@ const ResumeHistoryList = () => {
           </AnimatePresence>
 
           {mockResumes.length === 0 && (
-            <div className="text-center py-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl border-dashed">
-              <FileText className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-1">No resumes found</h3>
-              <p className="text-slate-500">Upload your first resume to see the analytics history here.</p>
+            <div className="text-center py-20 glass-card border-dashed border-white/10 rounded-3xl space-y-3">
+              <FileText className="w-12 h-12 text-text-secondary mx-auto mb-2 opacity-50" />
+              <h3 className="text-lg font-bold text-text-primary">No Resumes Found</h3>
+              <p className="text-text-secondary text-sm max-w-sm mx-auto">
+                Upload your first resume to see comprehensive history and track ATS improvement over time.
+              </p>
             </div>
           )}
         </div>
