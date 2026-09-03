@@ -43,10 +43,12 @@ const Hero = () => {
                 );
 
                 if (response.data?.success && response.data.data) {
-                    setResumeResultData(response.data.data);
-                    if (response.data.data.tempId) {
-                        localStorage.setItem("tempId", response.data.data.tempId);
+                    const resData = response.data.data;
+                    const resumeIdOrTempId = resData.tempId || resData._id;
+                    if (resumeIdOrTempId) {
+                        localStorage.setItem("tempId", String(resumeIdOrTempId));
                     }
+                    setResumeResultData(resData);
                     toast.success("Resume analyzed successfully!");
                     setIsScanning(false);
                     if (isLoggedIn) {

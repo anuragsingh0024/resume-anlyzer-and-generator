@@ -4,6 +4,7 @@ import { extractTextFromDocx, extractTextFromPDF } from "../utils/exctractText.j
 import { uploadResumeToCloudinary } from "../utils/uploadToCloudinary.js";
 import User from '../models/User.model.js'
 import PDFDocument from "pdfkit";
+import mongoose from "mongoose";
 
 export const uploadResume = async (req, res) => {
     let resumeText = "";
@@ -61,15 +62,8 @@ export const uploadResume = async (req, res) => {
                 userId = req.user.id;
             }
 
-            let isGuest = false;
-            if (!userId) {
-                isGuest = true;
-            }
-            let tempId = null;
-            if (isGuest) {
-                tempId = Date.now();
-            }
-
+            let isGuest = !userId;
+            let tempId = String(Date.now());
 
             //save whole data into db
             const newResume = await Resume.create({
@@ -123,7 +117,7 @@ export const uploadResume = async (req, res) => {
                     uploadType: isGuest ? "guest" : "user",
                 },
 
-                tempId: isGuest ? tempId : null,
+                tempId: tempId,
             });
 
             if (!isGuest) {
@@ -159,8 +153,13 @@ export const getActiveResumeGuest = async (req, res) => {
         if (!tempId) {
             return res.status(400).json({ success: false, message: "No tempId provided" });
         }
+        const isValidObjectId = mongoose.Types.ObjectId.isValid(tempId);
         const resume = await Resume.findOne({
-            $or: [{ tempId: String(tempId) }, { tempId: Number(tempId) }]
+            $or: [
+                { tempId: String(tempId) },
+                { tempId: Number(tempId) },
+                ...(isValidObjectId ? [{ _id: tempId }] : [])
+            ]
         });
         if (!resume) {
             return res.status(404).json({ success: false, message: "Resume not found" });
@@ -186,15 +185,20 @@ export const updateGuestToUser = async (req, res) => {
         if (!tempId || tempId === "null" || tempId === "undefined") {
             return res.status(400).json({ success: false, message: "No tempId provided" });
         }
+        const isValidObjectId = mongoose.Types.ObjectId.isValid(tempId);
         const resume = await Resume.findOne({
-            $or: [{ tempId: String(tempId) }, { tempId: Number(tempId) }]
+            $or: [
+                { tempId: String(tempId) },
+                { tempId: Number(tempId) },
+                ...(isValidObjectId ? [{ _id: tempId }] : [])
+            ]
         });
         if (!resume) {
             return res.status(404).json({ success: false, message: "Resume not found" });
         }
         const updatedResume = await Resume.findByIdAndUpdate(
             resume._id,
-            { userId, meta: { uploadType: "user" }, tempId: null },
+            { userId, meta: { uploadType: "user" } },
             { new: true }
         );
 

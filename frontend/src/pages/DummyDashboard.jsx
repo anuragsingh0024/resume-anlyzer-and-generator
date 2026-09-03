@@ -18,12 +18,10 @@ const DummyDashboard = () => {
     });
 
     const [isLoading, setIsLoading] = useState(false);
+    const tempId = localStorage.getItem('tempId');
 
     const fetchBasicInfo = async () => {
-        const tempId = localStorage.getItem('tempId');
-
         if (!tempId) {
-            navigate('/');
             return;
         }
 
@@ -50,7 +48,23 @@ const DummyDashboard = () => {
 
     useEffect(() => {
         fetchBasicInfo();
-    }, []);
+    }, [tempId]);
+
+    if (!tempId) {
+        return (
+            <div className="min-h-screen pt-32 pb-10 px-6 bg-background flex flex-col items-center justify-center text-center space-y-4">
+                <AlertCircle className="w-16 h-16 text-amber-400" />
+                <h2 className="text-2xl font-bold">No Uploaded Resume Found</h2>
+                <p className="text-text-secondary max-w-md">Please upload your resume to get instant AI ATS scores and keyword analysis.</p>
+                <button
+                    onClick={() => navigate('/')}
+                    className="px-6 py-3 bg-primary text-background font-bold rounded-xl hover:scale-105 transition-all cursor-pointer shadow-lg shadow-primary/20"
+                >
+                    Upload Resume Now
+                </button>
+            </div>
+        );
+    }
 
     if (isLoading) {
         return (
