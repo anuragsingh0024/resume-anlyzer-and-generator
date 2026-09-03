@@ -3,6 +3,7 @@ import { Upload, CheckCircle, Search, FileText } from 'lucide-react';
 import { data, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import axiosInstance from '../../services/axiosInstance';
+import toast from 'react-hot-toast';
 
 const Hero = () => {
     const [isScanning, setIsScanning] = useState(false);
@@ -13,8 +14,6 @@ const Hero = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-
-
     const [resumeResultData, setResumeResultData] = useState({
         name: "",
         atsScore: 0,
@@ -22,8 +21,6 @@ const Hero = () => {
         skills: [],
         tempId: null,
     });
-
-
 
     const handleFileChange = async (e) => {
         const selectedFile = e.target.files[0];
@@ -49,15 +46,20 @@ const Hero = () => {
                     if (response.data.data.tempId) {
                         localStorage.setItem("tempId", response.data.data.tempId);
                     }
+                    toast.success("Resume analyzed successfully!");
                     setIsScanning(false);
                     if (isLoggedIn) {
                         navigate('/dashboard');
                     } else {
                         navigate('/dummy-dashboard');
                     }
+                } else {
+                    toast.error(response.data?.message || "Resume analysis failed");
                 }
             } catch (error) {
                 console.error("Resume Upload Error:", error.message);
+                const msg = error.response?.data?.message || "Resume upload failed. Please try again.";
+                toast.error(msg);
                 setIsScanning(false);
             } finally {
                 setIsScanning(false);

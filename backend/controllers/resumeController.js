@@ -6,7 +6,7 @@ import User from '../models/User.model.js'
 import PDFDocument from "pdfkit";
 
 export const uploadResume = async (req, res) => {
-    let resumeText;
+    let resumeText = "";
     try {
         const file = req.files?.file;
 
@@ -14,33 +14,45 @@ export const uploadResume = async (req, res) => {
             return res.status(400).json({ success: false, message: "No file uploaded" });
         }
 
-        const result = await uploadResumeToCloudinary(file);
-        if (!result.success) {
-            return res.status(400).json({ success: false, message: result.message });
+        const fileName = file.name || "";
+        const isPdf = fileName.toLowerCase().endsWith(".pdf") || file.mimetype === "application/pdf";
+        const isDocx = fileName.toLowerCase().endsWith(".docx") || fileName.toLowerCase().endsWith(".doc");
+
+        // 1. Extract text directly from local temp file / buffer
+        if (isPdf) {
+            resumeText = await extractTextFromPDF(file.tempFilePath || file.data);
+        } else if (isDocx) {
+            resumeText = await extractTextFromDocx(file.tempFilePath || file.data);
         }
 
-
-
-
-        if (result.type === "pdf") {
-            resumeText = await extractTextFromPDF(result.url);
-
+        // 2. Upload to Cloudinary in background (non-blocking for analysis)
+        let cloudinaryResult = null;
+        try {
+            cloudinaryResult = await uploadResumeToCloudinary(file);
+            // Fallback text extraction from Cloudinary URL if local extraction was empty
+            if (!resumeText && cloudinaryResult?.success && cloudinaryResult?.url) {
+                if (isPdf) {
+                    resumeText = await extractTextFromPDF(cloudinaryResult.url);
+                } else if (isDocx) {
+                    resumeText = await extractTextFromDocx(cloudinaryResult.url);
+                }
+            }
+        } catch (cloudErr) {
+            console.warn("Cloudinary upload warning:", cloudErr.message);
         }
 
-        if (result.type === "docx") {
-            resumeText = await extractTextFromDocx(result.url);
-
-        }
-
-        if (!resumeText) {
-            return res.status(400).json({ success: false, message: "No resume text provided" });
+        if (!resumeText || !resumeText.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "Could not extract text from document. Please ensure it is a valid, non-scanned PDF or Word file."
+            });
         }
 
         try {
             const result = await analyzeResume(resumeText);
 
-            if (!result) {
-                return res.status(400).json({ success: false, message: "No resume text provided" });
+            if (!result || typeof result !== "object") {
+                return res.status(500).json({ success: false, message: "AI resume analysis failed to generate structured data." });
             }
 
 

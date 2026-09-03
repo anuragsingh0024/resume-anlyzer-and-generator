@@ -21,24 +21,25 @@ export const analyzeResume = async (resumeText) => {
     try {
         const prompt = geminiPrompt(resumeText);
 
-        // 🔥 ONLY CHANGE: retry added
         const response = await generateWithRetry(prompt);
 
-        const clean = response
-            .replace(/```json/g, "")
-            .replace(/```/g, "")
+        let clean = response
+            .replace(/```json/gi, "")
+            .replace(/```/gi, "")
             .trim();
 
-        const data = JSON.parse(clean);
+        // Extract substring between first { and last }
+        const firstBrace = clean.indexOf('{');
+        const lastBrace = clean.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1) {
+            clean = clean.substring(firstBrace, lastBrace + 1);
+        }
 
+        const data = JSON.parse(clean);
         return data;
 
     } catch (error) {
         console.error("Resume Analysis Error:", error.message);
-
-        return {
-            success: false,
-            error: error.message
-        };
+        throw error;
     }
 };

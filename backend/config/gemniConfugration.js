@@ -6,6 +6,9 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const model = genAI.getGenerativeModel({
     model: process.env.GEMINI_MODEL || "gemini-1.5-flash",
+    generationConfig: {
+        responseMimeType: "application/json",
+    },
 });
 
 export default model;
