@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Upload, CheckCircle, Search, FileText } from 'lucide-react';
-import { data, useNavigate } from 'react-router-dom';
+import { Upload, CheckCircle, Search, FileText, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import axiosInstance from '../../services/axiosInstance';
 import toast from 'react-hot-toast';
