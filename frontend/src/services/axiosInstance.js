@@ -2,10 +2,10 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 
 
-const BASE_URL = import.meta.env.VITE_BASE_URL
+const BASE_URL = import.meta.env.VITE_BASE_URL || "https://resume-anlyzer-and-generator-1.onrender.com/api/v1";
 // Create an Axios instance
 const axiosInstance = axios.create({
-    baseURL: `${BASE_URL}`, // Update with your API base URL
+    baseURL: `${BASE_URL}`, // Render API base URL
     withCredentials: true, // Important if using cookies
 });
 
