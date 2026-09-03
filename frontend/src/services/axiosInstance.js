@@ -2,11 +2,17 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 
 
-const BASE_URL = import.meta.env.VITE_BASE_URL || "https://resume-anlyzer-and-generator-1.onrender.com/api/v1";
+let rawBaseUrl = import.meta.env.VITE_BASE_URL || "https://resume-anlyzer-and-generator-1.onrender.com/api/v1";
+rawBaseUrl = rawBaseUrl.trim().replace(/\/+$/, '');
+if (!rawBaseUrl.endsWith('/api/v1')) {
+    rawBaseUrl = `${rawBaseUrl}/api/v1`;
+}
+const BASE_URL = rawBaseUrl;
+
 // Create an Axios instance
 const axiosInstance = axios.create({
-    baseURL: `${BASE_URL}`, // Render API base URL
-    withCredentials: true, // Important if using cookies
+    baseURL: BASE_URL,
+    withCredentials: true,
 });
 
 // Request interceptor for auth headers & offline check

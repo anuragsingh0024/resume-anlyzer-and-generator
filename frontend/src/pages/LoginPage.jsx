@@ -203,7 +203,7 @@ const LoginPage = () => {
 
             <div className="space-y-4 mb-8">
 
-              <div className="w-full">
+              <div className="w-full flex justify-center">
                 <GoogleLogin
                   onSuccess={handleGoogleSuccess}
                   onError={handleGoogleError}
@@ -211,7 +211,7 @@ const LoginPage = () => {
                   size="large"
                   text="continue_with"
                   shape="rectangular"
-                  width="100%"
+                  width="360"
                 />
               </div>
               <button className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-[#24292e] text-white rounded-xl font-semibold border border-white/10 hover:bg-[#2b3137] transition-all active:scale-[0.98]">

@@ -49,25 +49,26 @@ cloudinaryConnect();
 app.use(fileUpload({
   useTempFiles: true
 }));
-// Routes (placeholder)
+// Routes (API v1 & Direct fallback)
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-//auth route
-app.use('/api/v1/auth', authRoute)
+// Auth routes
+app.use('/api/v1/auth', authRoute);
+app.use('/auth', authRoute);
 
+// Resume routes
+app.use('/api/v1/resume', resumeRoute);
+app.use('/resume', resumeRoute);
 
-//resume route
-app.use('/api/v1/resume', resumeRoute)
+// User routes
+app.use('/api/v1/user', userRoute);
+app.use('/user', userRoute);
 
-//user route
-app.use('/api/v1/user', userRoute)
-
-
-
-//admin route
-app.use('/api/v1/admin', adminRoute)
+// Admin routes
+app.use('/api/v1/admin', adminRoute);
+app.use('/admin', adminRoute);
 
 
 
